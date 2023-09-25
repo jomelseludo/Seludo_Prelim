@@ -1,0 +1,9 @@
+---
+- hosts: manage_nodes
+  become: yes
+  tasks:
+  
+  - name: Install Python3 and Set Pip3 as default
+    apt:
+      update_cache: yes
+    when: ansible_os_family == 'Debian' or ansible_os family == 'Ubuntu'   
