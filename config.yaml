@@ -1,9 +1,60 @@
 ---
-- hosts: manage_nodes
-  become: yes
+- hosts: all
+  become: true
+  gather_facts: yes
+  vars_files:
+    - config.yml
   tasks:
-  
-  - name: Install Python3 and Set Pip3 as default
-    apt:
-      update_cache: yes
-    when: ansible_os_family == 'Debian' or ansible_os family == 'Ubuntu'   
+
+    - name: Check DNF Version
+      command: dnf --version
+      register: dnf_version
+
+    - name: install python3 and pip3
+      package:
+        name:
+          - python3
+          - python3-pip
+        state: latest
+        update_cache: yes
+
+
+    - name: Update apt package cache (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'
+
+    - name: Set pip3 as the default pip
+      alternatives:
+        name: pip
+        path: /usr/bin/pip3
+
+    - name: Set python3 as the default python
+      alternatives:
+        name: python
+        path: /usr/bin/python3
+
+    - name: Install Java OpenJDK on Ubuntu
+      apt:
+        name: openjdk-11-jdk  # For Ubuntu
+        state: latest
+      when: ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'
+
+    - name: Install Java OpenJDK on CentOS
+      yum:
+        name: java-11-openjdk
+        state: latest
+      when: ansible_distribution == "CentOS"
+
+    - name: Create MOTD
+      template:
+        src: motd.j2
+        dest: /etc/motd
+      when: "'motd_text' in vars"
+
+    - name: Create User
+      user:
+        name: "{{ user_name }}"
+        state: present
+      when: "'user_name' in vars"
+
