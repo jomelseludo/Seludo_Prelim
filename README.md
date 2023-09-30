@@ -1,2 +1,2 @@
 # Seludo_Prelim
-Prelim_CPE232
+PrelimExam_CPE232
